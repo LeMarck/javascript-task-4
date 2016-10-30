@@ -14,15 +14,14 @@ exports.isStar = true;
  */
 exports.query = function (collection) {
     var changedCollection = JSON.parse(JSON.stringify(collection));
-    var args = [].slice.call(arguments);
-    var funcs = args.slice(1).sort(function (first, second) {
-        return first.name > second.name;
-    });
-    funcs.forEach(function (func) {
-        changedCollection = func(changedCollection);
-    });
 
-    return changedCollection;
+    return [].slice.call(arguments, 1)
+        .sort(function (first, second) {
+            return first.name > second.name;
+        })
+        .reduce(function (acc, func) {
+            return func(acc);
+        }, changedCollection);
 };
 
 /**
@@ -70,21 +69,15 @@ exports.filterIn = function (property, values) {
 exports.sortBy = function (property, order) {
     return function (collection) {
         function sortedRule(first, second) {
-            if (first[property] < second[property]) {
-                return -1;
-            }
-            if (first[property] > second[property]) {
-                return 1;
+            if (first[property] === second[property]) {
+                return 0;
             }
 
-            return 0;
+            return first[property] > second[property] ? 1 : -1;
         }
         var changedCollection = collection.sort(sortedRule);
-        if (order === 'desc') {
-            changedCollection.reverse();
-        }
 
-        return changedCollection;
+        return order === 'asc' ? changedCollection : changedCollection.reverse();
     };
 };
 
@@ -97,7 +90,9 @@ exports.sortBy = function (property, order) {
 exports.format = function (property, formatter) {
     return function (collection) {
         return collection.map(function (element) {
-            element[property] = formatter(element[property]);
+            if (property in element) {
+                element[property] = formatter(element[property]);
+            }
 
             return element;
         });
