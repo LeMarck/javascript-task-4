@@ -68,16 +68,11 @@ exports.filterIn = function (property, values) {
  */
 exports.sortBy = function (property, order) {
     return function (collection) {
-        function sortedRule(first, second) {
-            if (first[property] === second[property]) {
-                return 0;
-            }
+        return collection.sort(function (first, second) {
+            var res = first[property] > second[property] ? 1 : -1;
 
-            return first[property] > second[property] ? 1 : -1;
-        }
-        var changedCollection = collection.sort(sortedRule);
-
-        return order === 'asc' ? changedCollection : changedCollection.reverse();
+            return order === 'asc' ? res : -res;
+        });
     };
 };
 
@@ -106,7 +101,6 @@ exports.format = function (property, formatter) {
  */
 exports.limit = function (count) {
     return function (collection) {
-
         return collection.slice(0, count < 0 ? 0 : count);
     };
 };
@@ -123,16 +117,10 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            var changedCollection = [];
-            funcs.forEach(function (func) {
-                var friends = func(collection);
-                friends.forEach(function (friend) {
-                    changedCollection.push(friend);
+            return collection.filter(function (elem) {
+                return funcs.some(function (func) {
+                    return func(collection).indexOf(elem) !== -1;
                 });
-            });
-
-            return changedCollection.filter(function (elem, index, collect) {
-                return collect.indexOf(elem) === index;
             });
         };
     };
@@ -147,16 +135,11 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            var changedCollection = collection;
-            var party;
-            funcs.forEach(function (func) {
-                party = func(collection);
-                changedCollection = changedCollection.filter(function (value) {
-                    return party.indexOf(value) > -1;
+            return collection.filter(function (elem) {
+                return funcs.every(function (func) {
+                    return func(collection).indexOf(elem) !== -1;
                 });
             });
-
-            return changedCollection;
         };
     };
 }
