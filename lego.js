@@ -6,6 +6,8 @@
  */
 exports.isStar = true;
 
+var FUNCS = ['limit', 'format', 'select'];
+
 /**
  * Запрос к коллекции
  * @param {Array} collection
@@ -17,7 +19,7 @@ exports.query = function (collection) {
 
     return [].slice.call(arguments, 1)
         .sort(function (first, second) {
-            return first.name > second.name;
+            return FUNCS.indexOf(first.name) > FUNCS.indexOf(second.name);
         })
         .reduce(function (acc, func) {
             return func(acc);
@@ -83,7 +85,7 @@ exports.sortBy = function (property, order) {
  * @returns {Function}
  */
 exports.format = function (property, formatter) {
-    return function (collection) {
+    return function format(collection) {
         return collection.map(function (element) {
             if (property in element) {
                 element[property] = formatter(element[property]);
@@ -100,7 +102,7 @@ exports.format = function (property, formatter) {
  * @returns {Function}
  */
 exports.limit = function (count) {
-    return function (collection) {
+    return function limit(collection) {
         return collection.slice(0, count < 0 ? 0 : count);
     };
 };
