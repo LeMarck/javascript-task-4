@@ -103,7 +103,11 @@ exports.format = function (property, formatter) {
  */
 exports.limit = function (count) {
     return function limit(collection) {
-        return collection.slice(0, count < 0 ? 0 : count);
+        if (count < 0) {
+            throw new RangeError('It is expected a positive number');
+        }
+
+        return collection.slice(0, count);
     };
 };
 
