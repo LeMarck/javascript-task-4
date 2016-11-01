@@ -36,14 +36,13 @@ exports.select = function () {
 
     return function select(collection) {
         return collection.map(function (element) {
-            var friend = {};
-            for (var key in element) {
-                if (args.indexOf(key) !== -1) {
-                    friend[key] = element[key];
+            return args.reduce(function (acc, arg) {
+                if (element.hasOwnProperty(arg)) {
+                    acc[arg] = element[arg];
                 }
-            }
 
-            return friend;
+                return acc;
+            }, {});
         });
     };
 };
