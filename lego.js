@@ -22,18 +22,10 @@ exports.query = function (collection) {
             return obj;
         }, {});
     });
-    var firstPriority = null;
-    var secondPriority = null;
 
     return [].slice.call(arguments, 1)
         .sort(function (first, second) {
-            firstPriority = PRIORITY.indexOf(first.name);
-            secondPriority = PRIORITY.indexOf(second.name);
-            if (firstPriority === secondPriority) {
-                return 0;
-            }
-
-            return firstPriority > secondPriority ? 1 : -1;
+            return PRIORITY.indexOf(first.name) > PRIORITY.indexOf(second.name);
         })
         .reduce(function (newCollection, func) {
             return func(newCollection);
@@ -49,10 +41,10 @@ exports.select = function () {
     var fields = [].slice.call(arguments);
 
     return function select(collection) {
-        return collection.map(function (item) {
+        return collection.map(function (element) {
             return fields.reduce(function (friend, field) {
-                if (item.hasOwnProperty(field)) {
-                    friend[field] = item[field];
+                if (element.hasOwnProperty(field)) {
+                    friend[field] = element[field];
                 }
 
                 return friend;
@@ -84,9 +76,6 @@ exports.filterIn = function (property, values) {
 exports.sortBy = function (property, order) {
     return function sortBy(collection) {
         return collection.sort(function (first, second) {
-            if (first[property] === second[property]) {
-                return 0;
-            }
             var res = first[property] > second[property] ? 1 : -1;
 
             return order === 'asc' ? res : -res;
@@ -139,13 +128,11 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            return funcs.reduce(function (changeCollection, func) {
-                func(collection).forEach(function (item) {
-                    changeCollection.push(item);
+            return collection.filter(function (item) {
+                return funcs.some(function (func) {
+                    return func(collection).indexOf(item) !== -1;
                 });
-
-                return changeCollection;
-            }, []);
+            });
         };
     };
 
@@ -159,9 +146,11 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            return funcs.reduce(function (changeCollection, func) {
-                return func(changeCollection);
-            }, collection);
+            return collection.filter(function (item) {
+                return funcs.every(function (func) {
+                    return func(collection).indexOf(item) !== -1;
+                });
+            });
         };
     };
 }
