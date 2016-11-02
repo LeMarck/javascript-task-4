@@ -46,12 +46,12 @@ exports.select = function () {
 
     return function select(collection) {
         return collection.map(function (element) {
-            return fields.reduce(function (friend, field) {
+            return fields.reduce(function (record, field) {
                 if (element.hasOwnProperty(field)) {
-                    friend[field] = element[field];
+                    record[field] = element[field];
                 }
 
-                return friend;
+                return record;
             }, {});
         });
     };
