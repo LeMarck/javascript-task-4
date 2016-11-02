@@ -135,16 +135,10 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            var newCollection = funcs.reduce(function (changeCollection, func) {
-                func(collection).forEach(function (item) {
-                    changeCollection.push(item);
-                });
-
-                return changeCollection;
-            }, []);
-
             return collection.filter(function (item) {
-                return newCollection.indexOf(item) !== -1;
+                return funcs.some(function (func) {
+                    return func([item]).length !== 0;
+                });
             });
         };
     };
