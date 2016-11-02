@@ -153,9 +153,11 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            return funcs.reduce(function (changeCollection, func) {
-                return func(changeCollection);
-            }, collection);
+            return collection.filter(function (item) {
+                return funcs.every(function (func) {
+                    return func([item]).length !== 0;
+                });
+            });
         };
     };
 }
