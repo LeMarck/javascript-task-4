@@ -135,11 +135,15 @@ if (exports.isStar) {
         var funcs = [].slice.call(arguments);
 
         return function (collection) {
-            return collection.filter(function (item) {
-                return funcs.some(function (func) {
-                    return func(collection).indexOf(item) !== -1;
+            return funcs.reduce(function (changeCollection, func) {
+                func(collection).forEach(function (item) {
+                    if (changeCollection.indexOf(item) === -1) {
+                        changeCollection.push(item);
+                    }
                 });
-            });
+
+                return changeCollection;
+            }, []);
         };
     };
 
