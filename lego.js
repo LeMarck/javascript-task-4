@@ -25,7 +25,11 @@ exports.query = function (collection) {
 
     return [].slice.call(arguments, 1)
         .sort(function (first, second) {
-            return PRIORITY.indexOf(first.name) > PRIORITY.indexOf(second.name);
+            if (PRIORITY.indexOf(first.name) === PRIORITY.indexOf(second.name)) {
+                return 0;
+            }
+
+            return PRIORITY.indexOf(first.name) > PRIORITY.indexOf(second.name) ? 1 : -1;
         })
         .reduce(function (newCollection, func) {
             return func(newCollection);
@@ -76,6 +80,9 @@ exports.filterIn = function (property, values) {
 exports.sortBy = function (property, order) {
     return function sortBy(collection) {
         return collection.sort(function (first, second) {
+            if (first[property] === second[property]) {
+                return 0;
+            }
             var res = first[property] > second[property] ? 1 : -1;
 
             return order === 'asc' ? res : -res;
