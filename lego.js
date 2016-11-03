@@ -8,6 +8,16 @@ exports.isStar = true;
 
 var PRIORITY = ['filterIn', 'sortBy', 'limit', 'format', 'select'];
 
+var copy = function (collection) {
+    return collection.map(function (item) {
+        return Object.keys(item).reduce(function (obj, key) {
+            obj[key] = item[key];
+
+            return obj;
+        }, {});
+    });
+};
+
 /**
  * Запрос к коллекции
  * @param {Array} collection
@@ -15,21 +25,19 @@ var PRIORITY = ['filterIn', 'sortBy', 'limit', 'format', 'select'];
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var changedCollection = collection.map(function (item) {
-        return Object.keys(item).reduce(function (obj, key) {
-            obj[key] = item[key];
-
-            return obj;
-        }, {});
-    });
+    var changedCollection = copy(collection);
+    var firstPriority = null;
+    var secondPriority = null;
 
     return [].slice.call(arguments, 1)
         .sort(function (first, second) {
-            if (PRIORITY.indexOf(first.name) === PRIORITY.indexOf(second.name)) {
+            firstPriority = PRIORITY.indexOf(first.name);
+            secondPriority = PRIORITY.indexOf(second.name);
+            if (firstPriority === secondPriority) {
                 return 0;
             }
 
-            return PRIORITY.indexOf(first.name) > PRIORITY.indexOf(second.name) ? 1 : -1;
+            return firstPriority > secondPriority ? 1 : -1;
         })
         .reduce(function (newCollection, func) {
             return func(newCollection);
@@ -45,10 +53,10 @@ exports.select = function () {
     var fields = [].slice.call(arguments);
 
     return function select(collection) {
-        return collection.map(function (element) {
+        return collection.map(function (item) {
             return fields.reduce(function (record, field) {
-                if (element.hasOwnProperty(field)) {
-                    record[field] = element[field];
+                if (item.hasOwnProperty(field)) {
+                    record[field] = item[field];
                 }
 
                 return record;
@@ -99,7 +107,7 @@ exports.sortBy = function (property, order) {
 exports.format = function (property, formatter) {
     return function format(collection) {
         return collection.map(function (item) {
-            if (property in item) {
+            if (item.hasOwnProperty(property)) {
                 item[property] = formatter(item[property]);
             }
 
